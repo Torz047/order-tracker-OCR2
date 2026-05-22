@@ -1,13 +1,16 @@
 import { useRef, useState } from 'react'
-import { UploadCloud } from 'lucide-react'
+import { UploadCloud, FileText, Image } from 'lucide-react'
+import { isSupportedFile } from '../utils/ocr'
+
+const ACCEPT = 'application/pdf,image/jpeg,image/png,image/bmp,image/tiff,image/gif,image/webp'
 
 export default function UploadZone({ onFiles, disabled }) {
   const inputRef = useRef()
   const [dragging, setDragging] = useState(false)
 
   function handleFiles(files) {
-    const pdfs = Array.from(files).filter((f) => f.type === 'application/pdf')
-    if (pdfs.length > 0) onFiles(pdfs)
+    const supported = Array.from(files).filter(isSupportedFile)
+    if (supported.length > 0) onFiles(supported)
   }
 
   return (
@@ -33,22 +36,40 @@ export default function UploadZone({ onFiles, disabled }) {
       <input
         ref={inputRef}
         type="file"
-        accept="application/pdf"
+        accept={ACCEPT}
         multiple
         className="hidden"
         onChange={(e) => { handleFiles(e.target.files); e.target.value = '' }}
         disabled={disabled}
       />
+
       <div className={`p-3 rounded-xl ${dragging ? 'bg-blue-100' : 'bg-gray-100'}`}>
         <UploadCloud size={28} className={dragging ? 'text-blue-500' : 'text-gray-400'} />
       </div>
+
       <div>
         <p className="text-sm font-medium text-gray-700">
-          {dragging ? 'Drop to upload' : 'Drop PDF files here or click to browse'}
+          {dragging ? 'Drop to upload' : 'Drop files here or click to browse'}
         </p>
         <p className="text-xs text-gray-400 mt-1">
           Order confirmations · Invoices · Purchase orders
         </p>
+      </div>
+
+      {/* Supported formats */}
+      <div className="flex items-center gap-3 mt-1">
+        <span className="flex items-center gap-1 text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg">
+          <FileText size={11} /> PDF
+        </span>
+        <span className="flex items-center gap-1 text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg">
+          <Image size={11} /> JPG
+        </span>
+        <span className="flex items-center gap-1 text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg">
+          <Image size={11} /> PNG
+        </span>
+        <span className="flex items-center gap-1 text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg">
+          <Image size={11} /> BMP · TIFF · GIF · WEBP
+        </span>
       </div>
     </div>
   )
