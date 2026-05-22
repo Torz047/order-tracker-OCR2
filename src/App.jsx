@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Package, Trash2, ChevronDown } from 'lucide-react'
 import { useOrders, useApiKey } from './hooks/useOrders'
 import { useToast } from './hooks/useToast'
-import { extractTextFromPDF } from './utils/ocr'
+import { extractText, getFileType } from './utils/ocr'
 import { extractOrderFields } from './utils/parser'
 import ApiKeyInput from './components/ApiKeyInput'
 import UploadZone from './components/UploadZone'
@@ -28,14 +28,14 @@ export default function App() {
     }
     setProcessing(true)
     for (const file of files) {
-      setProcessingLabel(`Reading "${file.name}"…`)
+      setProcessingLabel(`Reading "${file.name}" (${getFileType(file) === 'image' ? 'image' : 'PDF'})…`)
       try {
-        const rawText = await extractTextFromPDF(file, apiKey.trim())
+        const rawText = await extractText(file, apiKey.trim())
         const fields = extractOrderFields(rawText)
         addOrder({
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           ...fields,
-          orderId: fields.orderId || file.name.replace('.pdf', ''),
+          orderId: fields.orderId || file.name.replace(/\.[^.]+$/, ''),
           rawText: rawText.substring(0, 2000),
           fileName: file.name,
           importedAt: new Date().toLocaleString(),
